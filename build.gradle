@@ -20,7 +20,7 @@ apply plugin: 'maven-publish'
 apply plugin: 'com.jfrog.bintray'
 
 group 'alioli'
-version '0.1'
+version '0.1.1'
 
 sourceCompatibility = 1.8
 targetCompatibility = 1.8
@@ -91,7 +91,8 @@ bintray {
         version {
             name = project.version
             desc = "$project.name v$project.version"
-            vcsTag = "v$project.name"
+            released  = new Date()
+            vcsTag = "v$project.version"
         }
     }
 }

@@ -43,12 +43,20 @@ import static org.junit.runner.Description.createTestDescription;
  *  public class StackTest extends Scenario {{
  *      subject("stack", () -> {
  *          Stack<Object> stack = new Stack<>();
+ *
+ *          when("non-empty", () -> {
+ *              Object value = new Object();
+ *              stack.push(value);
+ *
+ *              should("return the head value on pop", () -> {
+ *                  assertThat(stack.pop()).isEqualTo(value);
+ *              });
+ *          });
+ *
  *          when("empty", () -> {
  *              should("complain on pop", () -> {
- *                  try {
- *                      stack.pop();
- *                      Assert.fail("pop on empty stack should fail");
- *                  } catch (EmptyStackException expected) {}
+ *                  Exception failure = assertThrows(() -> stack.pop());
+ *                  assertThat(failure).isInstanceOf(EmptyStackException.class);
  *              });
  *          });
  *      });

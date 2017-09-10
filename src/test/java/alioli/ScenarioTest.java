@@ -26,8 +26,8 @@ import org.junit.runner.notification.RunNotifier;
 import java.io.IOException;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import static alioli.Asserts.assertThrows;
 import static com.google.common.truth.Truth.assertThat;
-import static org.junit.Assert.fail;
 import static org.junit.runner.Description.createTestDescription;
 
 /**
@@ -142,78 +142,71 @@ public class ScenarioTest extends Scenario {
                 });
             });
 
-            with("two sections", () -> {
+            with("two actions", () -> {
                 that("have same name", () -> {
-                    final Runner runner = new Runner(SectionsWithSameName.class);
+                    final Runner runner = new Runner(ActionsWithSameName.class);
 
                     should("execute all their tests once", () -> {
                         runner.run(new RunNotifier());
-                        assertThat(SectionsWithSameName.sFirstTestExecuted).isEqualTo(1);
-                        assertThat(SectionsWithSameName.sSecondTestExecuted).isEqualTo(1);
+                        assertThat(ActionsWithSameName.sFirstTestExecuted).isEqualTo(1);
+                        assertThat(ActionsWithSameName.sSecondTestExecuted).isEqualTo(1);
                     });
                 });
             });
 
             with("two tests", () -> {
                 that("have identical names", () -> {
-                    should("throw IllegalStructureException", () -> {
-                        try {
-                            new Runner(TestsWithSameName.class);
-                            fail("IllegalStructureException should have been thrown");
-                        } catch (final WrongStructureException expected) {
-                            assertThat(expected).hasMessageThat().contains(
-                                    "test with identical name has been already defined");
-                        }
+                    should("throw WrongStructureException", () -> {
+                        final Exception failure =
+                                assertThrows(() -> new Runner(TestsWithSameName.class));
+
+                        assertThat(failure).isInstanceOf(WrongStructureException.class);
+                        assertThat(failure).hasMessageThat().contains(
+                                "test with identical name has been already defined");
                     });
                 });
             });
 
             with("subject inside another subject", () -> {
-                should("throw IllegalStructureException", () -> {
-                    try {
-                        new Runner(SubjectInSubject.class);
-                        fail("IllegalStructureException should have been thrown");
-                    } catch (final WrongStructureException expected) {
-                        assertThat(expected).hasMessageThat().contains(
-                                "subject inside another subject");
-                    }
+                should("throw WrongStructureException", () -> {
+                    final Exception failure =
+                            assertThrows(() -> new Runner(SubjectInSubject.class));
+
+                    assertThat(failure).isInstanceOf(WrongStructureException.class);
+                    assertThat(failure).hasMessageThat().contains("subject inside another subject");
                 });
             });
 
             with("a test", () -> {
                 without("subject", () -> {
-                    should("throw IllegalStructureException", () -> {
-                        try {
-                            new Runner(TestWithoutSubject.class);
-                            fail("IllegalStructureException should have been thrown");
-                        } catch (final WrongStructureException expected) {
-                            assertThat(expected).hasMessageThat().contains("test without subject");
-                        }
+                    should("throw WrongStructureException", () -> {
+                        final Exception failure =
+                                assertThrows(() -> new Runner(TestWithoutSubject.class));
+
+                        assertThat(failure).isInstanceOf(WrongStructureException.class);
+                        assertThat(failure).hasMessageThat().contains("test without subject");
                     });
                 });
             });
 
-            with("a section", () -> {
+            with("an action", () -> {
                 without("subject", () -> {
-                    should("throw IllegalStructureException", () -> {
-                        try {
-                            new Runner(SectionWithoutSubject.class);
-                            fail("IllegalStructureException should have been thrown");
-                        } catch (final WrongStructureException expected) {
-                            assertThat(expected).hasMessageThat().contains(
-                                    "action without subject");
-                        }
+                    should("throw WrongStructureException", () -> {
+                        final Exception failure =
+                                assertThrows(() -> new Runner(ActionWithoutSubject.class));
+
+                        assertThat(failure).isInstanceOf(WrongStructureException.class);
+                        assertThat(failure).hasMessageThat().contains("action without subject");
                     });
                 });
 
                 without("tests", () -> {
-                    should("throw IllegalStructureException", () -> {
-                        try {
-                            new Runner(SectionWithoutTests.class);
-                            fail("IllegalStructureException should have been thrown");
-                        } catch (final WrongStructureException expected) {
-                            assertThat(expected).hasMessageThat().contains("action without tests");
-                        }
+                    should("throw WrongStructureException", () -> {
+                        final Exception failure =
+                                assertThrows(() -> new Runner(ActionWithoutTests.class));
+
+                        assertThat(failure).isInstanceOf(WrongStructureException.class);
+                        assertThat(failure).hasMessageThat().contains("action without tests");
                     });
                 });
             });
@@ -306,20 +299,20 @@ public class ScenarioTest extends Scenario {
         }
     }
 
-    public static final class SectionsWithSameName extends Scenario {
+    public static final class ActionsWithSameName extends Scenario {
 
         public static int sFirstTestExecuted = 0;
         public static int sSecondTestExecuted = 0;
 
         {
             subject("test", () -> {
-                when("it has two sections with same name", () -> {
+                when("it has two actions with same name", () -> {
                     should("run first test", () -> {
                         sFirstTestExecuted++;
                     });
                 });
 
-                when("it has two sections with same name", () -> {
+                when("it has two actions with same name", () -> {
                     should("run second test", () -> {
                         sSecondTestExecuted++;
                     });
@@ -351,13 +344,13 @@ public class ScenarioTest extends Scenario {
         }
     }
 
-    public static final class SectionWithoutSubject extends Scenario {
+    public static final class ActionWithoutSubject extends Scenario {
         {
             when("failed", () -> {});
         }
     }
 
-    public static final class SectionWithoutTests extends Scenario {
+    public static final class ActionWithoutTests extends Scenario {
         {
             subject("test", () -> {
                 when("without any tests", () -> {});
